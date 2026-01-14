@@ -1,4 +1,4 @@
-{% if cephx['type'] is defined and cephx['type'] != '' %}
+{% if cephx['type'] is defined and cephx['type'] not in ['', [], '[]', None] %}
 {% if cephx['type'] in ['mds'] %}
 {{ '## ceph.' + cephx['type'] + '.' ~ cephx['name'] ~ '.keyring' }}
 {% elif cephx['type'] in 'client' %}
@@ -12,8 +12,8 @@
 {{ '# ' + ansible_managed }}
 {{ '# Do not edit manually' }}
 
-{% if cephx['key'] is defined and cephx['key'] != '' %}
-{% if cephx['type'] is defined and cephx['type'] != '' %}
+{% if cephx['key'] is defined and cephx['key'] not in ['', [], '[]', None] %}
+{% if cephx['type'] is defined and cephx['type'] not in ['', [], '[]', None] %}
 {% if cephx['type'] in ['mds', 'mgr'] %}
 {{ '[' + cephx['type'] + '.' ~ cephx['name'] ~ ']' }}
 {% elif cephx['type'] in 'mon' %}

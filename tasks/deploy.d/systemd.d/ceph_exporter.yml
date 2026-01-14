@@ -2,7 +2,7 @@
 - name: "ceph_common | Deploy ceph-exporter service configuration"
   ansible.builtin.template:
     src: "ceph_exporter_service.j2"
-    dest: "{{ vars['ceph_common_systemd_dir'] +
+    dest: "{{ lookup('ansible.builtin.vars', 'ceph_common_systemd_dir') +
       '/ceph-exporter.service.d/override.conf' }}"
     owner: "root"
     group: "root"
@@ -10,5 +10,5 @@
   notify:
     - "Daemon reload"
   when:
-    - "vars['ceph_common_systemd']['exporter_hotfix'] is defined"
-    - "vars['ceph_common_systemd']['exporter_hotfix'] == 'true'"
+    - "(lookup('ansible.builtin.vars',
+      'ceph_common_systemd')['exporter_hotfix'] | default('')) in 'true'"

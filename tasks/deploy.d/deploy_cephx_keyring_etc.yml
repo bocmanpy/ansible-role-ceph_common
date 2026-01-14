@@ -8,7 +8,8 @@
     owner: "root"
     group: "root"
     mode: "0400"
-  loop: "{{ vars['ceph_common_keyrings_clients'] | flatten(levels=1) }}"
+  loop: "{{ lookup('ansible.builtin.vars', 'ceph_common_keyrings_clients') |
+    flatten(levels=1) }}"
   loop_control:
     loop_var: "cephx"
     label: "{{ 'Keyring: ' +
@@ -16,4 +17,4 @@
       cephx['name'] ~ '.keyring' }}"
   when:
     - "cephx['name'] is defined"
-    - "cephx['name'] not in ['', [], None]"
+    - "cephx['name'] not in ['', [], '[]', None]"

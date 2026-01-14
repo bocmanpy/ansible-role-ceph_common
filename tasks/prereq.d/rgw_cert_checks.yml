@@ -7,34 +7,46 @@
         content: "{{ ceph_common_rgw_certificate_content['data'] }}"
       register: "ceph_common_rgw_certificate_result"
       vars:
-        ceph_common_rgw_certificate_content:
-          "{{ vars['ceph_common_rgw_certificate'] | first() }}"
+        ceph_common_rgw_certificate_content: "{{ lookup('ansible.builtin.vars',
+          'ceph_common_rgw_certificate') | first() }}"
       when:
-        - "vars['ceph_common_rgw_certificate'] not in ['{', '_', '']"
+        - "lookup('ansible.builtin.vars',
+          'ceph_common_rgw_certificate') not in ['{', '_', '']"
     - name: "ceph_common | Assert basic RGW certificate checks: CN"
       ansible.builtin.assert:
         that:
-          - "vars['ceph_common_rgw_certificate_result']['subject']['commonName'] != ''"
+          - "lookup('ansible.builtin.vars',
+            'ceph_common_rgw_certificate_result')['subject']['commonName']
+            not in ['', [], '[]', None]"
         fail_msg: "Certificate Common Name (CN) is empty"
         quiet: "true"
       when:
-        - "vars['ceph_common_rgw_certificate_result'] is defined"
-        - "vars['ceph_common_rgw_certificate_result']['skipped'] is not defined"
+        - "lookup('ansible.builtin.vars', 'ceph_common_rgw_certificate_result',
+          default='') not in ['', [], '[]', None]"
+        - "not 'skipped' in lookup('ansible.builtin.vars',
+          'ceph_common_rgw_certificate_result')"
     - name: "ceph_common | Assert basic RGW certificate checks: expiry date"
       ansible.builtin.assert:
         that:
-          - "vars['ceph_common_rgw_certificate_result']['expired'] != 'true'"
+          - "lookup('ansible.builtin.vars',
+            'ceph_common_rgw_certificate_result')['expired'] != 'true'"
         fail_msg: "Certificate expired"
         quiet: "true"
       when:
-        - "vars['ceph_common_rgw_certificate_result'] is defined"
-        - "vars['ceph_common_rgw_certificate_result']['skipped'] is not defined"
+        - "lookup('ansible.builtin.vars', 'ceph_common_rgw_certificate_result',
+          default='') not in ['', [], '[]', None]"
+        - "not 'skipped' in lookup('ansible.builtin.vars',
+          'ceph_common_rgw_certificate_result')"
     - name: "ceph_common | Assert basic RGW certificate checks: public key"
       ansible.builtin.assert:
         that:
-          - "vars['ceph_common_rgw_certificate_result']['public_key_data']['size'] != ''"
+          - "lookup('ansible.builtin.vars',
+            'ceph_common_rgw_certificate_result')['public_key_data']['size']
+            not in ['', [], '[]', None]"
         fail_msg: "Public key is not present in PEM bundle (should exists)"
         quiet: "true"
       when:
-        - "vars['ceph_common_rgw_certificate_result'] is defined"
-        - "vars['ceph_common_rgw_certificate_result']['skipped'] is not defined"
+        - "lookup('ansible.builtin.vars', 'ceph_common_rgw_certificate_result',
+          default='') not in ['', [], '[]', None]"
+        - "not 'skipped' in lookup('ansible.builtin.vars',
+          'ceph_common_rgw_certificate_result')"

@@ -8,6 +8,6 @@
     group: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     mode: "0400"
   vars:
-    ceph_common_rgw_certificate_content:
-      "{{ vars['ceph_common_rgw_certificate'] | first() }}"
+    ceph_common_rgw_certificate_content: "{{ lookup('ansible.builtin.vars',
+      'ceph_common_rgw_certificate') | first() }}"
   diff: false

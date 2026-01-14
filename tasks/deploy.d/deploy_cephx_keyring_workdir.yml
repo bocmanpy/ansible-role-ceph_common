@@ -7,7 +7,8 @@
     owner: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     group: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     mode: "0750"
-  loop: "{{ vars['ceph_common_keyrings_workdir_apps'] | flatten(levels=1) }}"
+  loop: "{{ lookup('ansible.builtin.vars',
+    'ceph_common_keyrings_workdir_apps') | flatten(levels=1) }}"
   loop_control:
     loop_var: "cephx"
     label: "{{ 'Dir: ' +
@@ -15,7 +16,7 @@
       cephx['type'] + '/ceph-' ~ cephx['name'] }}"
   when:
     - "cephx['name'] is defined"
-    - "cephx['name'] not in ['', [], None]"
+    - "cephx['name'] not in ['', [], '[]', None]"
 - name: "ceph_common | Deploy cephx keyring for Ceph client apps"
   ansible.builtin.template:
     src: "cephx_keyring.j2"
@@ -25,7 +26,8 @@
     owner: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     group: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     mode: "0400"
-  loop: "{{ vars['ceph_common_keyrings_workdir_apps'] | flatten(levels=1) }}"
+  loop: "{{ lookup('ansible.builtin.vars',
+    'ceph_common_keyrings_workdir_apps') | flatten(levels=1) }}"
   loop_control:
     loop_var: "cephx"
     label: "{{ 'Keyring: ' +
@@ -33,7 +35,7 @@
       cephx['type'] + '/ceph-' ~ cephx['name'] ~ '/keyring' }}"
   when:
     - "cephx['name'] is defined"
-    - "cephx['name'] not in ['', [], None]"
+    - "cephx['name'] not in ['', [], '[]', None]"
 - name: "ceph_common | Deploy cephx bootstrap keyring"
   ansible.builtin.template:
     src: "cephx_keyring.j2"
@@ -43,8 +45,8 @@
     owner: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     group: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     mode: "0600"
-  loop: "{{ vars['ceph_common_keyrings_workdir_bootstrap'] |
-    flatten(levels=1) }}"
+  loop: "{{ lookup('ansible.builtin.vars',
+    'ceph_common_keyrings_workdir_bootstrap') | flatten(levels=1) }}"
   loop_control:
     loop_var: "cephx"
     label: "{{ 'Keyring: ' +
@@ -52,4 +54,4 @@
       cephx['type'] + '/ceph.keyring' }}"
   when:
     - "cephx['name'] is defined"
-    - "cephx['name'] not in ['', [], None]"
+    - "cephx['name'] not in ['', [], '[]', None]"

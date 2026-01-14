@@ -2,7 +2,7 @@
 - name: "ceph_common | Deploy ceph-mgr service configuration"
   ansible.builtin.template:
     src: "ceph_mgr_service.j2"
-    dest: "{{ vars['ceph_common_systemd_dir'] +
+    dest: "{{ lookup('ansible.builtin.vars', 'ceph_common_systemd_dir') +
       '/ceph-mgr@.service.d/override.conf' }}"
     owner: "root"
     group: "root"
@@ -10,5 +10,5 @@
   notify:
     - "Daemon reload"
   when:
-    - "vars['ceph_common_systemd']['mgr'] is defined"
-    - "vars['ceph_common_systemd']['mgr'] not in ['', [], None]"
+    - "(lookup('ansible.builtin.vars',
+      'ceph_common_systemd')['mgr'] | default('')) not in ['', [], '[]', None]"

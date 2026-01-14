@@ -3,7 +3,7 @@
 {{ '# Do not edit manually' }}
 
 {{ '[Service]' }}
-{% for o in vars['ceph_common_systemd']['mgr'] %}
+{% for o in lookup('ansible.builtin.vars', 'ceph_common_systemd')['mgr'] %}
 {% for k,v in o.items() %}
 {{ (k.split('_') | map('capitalize') | join) + '=' + v }}
 {% endfor %}

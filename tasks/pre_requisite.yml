@@ -2,12 +2,13 @@
 - name: "ceph_common | Assert that ansible facts gathered successfully"
   ansible.builtin.assert:
     that:
-      - "hostvars[inventory_hostname]['ansible_os_family'] is defined"
+      - "hostvars[inventory_hostname]['ansible_facts']['os_family'] is defined"
     fail_msg: "'ansible_facts' not found. Please enable facts gathering"
     quiet: "true"
 - name: "ceph_common | Add the OS specific varibles"
   ansible.builtin.include_vars:
-    file: "{{ hostvars[inventory_hostname]['ansible_os_family'] + '.yml' }}"
+    file: "{{ hostvars[inventory_hostname]['ansible_facts']['os_family'] +
+      '.yml' }}"
 - name: "ceph_common | Set facts about ceph_common role"
   ansible.builtin.set_fact:
     ceph_common_systemd_dir: "/etc/systemd/system"
@@ -39,29 +40,33 @@
       community.general.json_query('[].rbdmap[]') | default(omit) }}"
   when:
     - "hostvars[inventory_hostname]['ceph_common'] is defined"
-    - "hostvars[inventory_hostname]['ceph_common'] not in ['', [], None]"
+    - "hostvars[inventory_hostname]['ceph_common'] not in ['', [], '[]', None]"
 - name: "ceph_common | Assert that ceph_common package state in valid value"
   ansible.builtin.assert:
     that:
-      - "vars['ceph_common_package_state'] in ['present', 'latest']"
-    fail_msg: "'package_state' must be in 'present' or 'latest'"
+      - "lookup('ansible.builtin.vars', 'ceph_common_package_state') in
+        ['present', 'latest']"
+    fail_msg: "{{ 'package_state must be in `present` or `latest`,
+      current is: ' + lookup('ansible.builtin.vars',
+      'ceph_common_package_state') }}"
     quiet: "true"
   when:
-    - "vars['ceph_common_package_state'] is defined"
-    - "vars['ceph_common_package_state'] not in ['', [], None]"
-- name: "ceph_common | Set ceph_common package state to present state from
-    empty state"
+    - "lookup('ansible.builtin.vars',
+      'ceph_common_package_state', default='') not in ['', [], '[]', None,
+      'present', 'latest']"
+- name: "ceph_common | Set package state to 'present' cause value is not
+    defined"
   ansible.builtin.set_fact:
-    ceph_common_package_state: 'present'
+    ceph_common_package_state: "present"
   when:
-    - "vars['ceph_common_package_state'] is defined"
-    - "vars['ceph_common_package_state'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars',
+      'ceph_common_package_state', default='') in ['', [], '[]', None]"
 - name: "ceph_common | Import RGW cert checks"
   ansible.builtin.include_tasks:
     file: "prereq.d/rgw_cert_checks.yml"
   when:
-    - "vars['ceph_common_rgw_certificate'] is defined"
-    - "vars['ceph_common_rgw_certificate'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars', 'ceph_common_rgw_certificate',
+      default='') not in ['', [], '[]', None]"
 - name: "ceph_common | Create conf.d catalogs"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['ceph_common_conf_dest'] }}"
@@ -84,34 +89,37 @@
     owner: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     group: "{{ hostvars[inventory_hostname]['ceph_common_user_id'] }}"
     mode: "0750"
-  loop: "{{ vars['ceph_common_keyrings_types'] | flatten(levels=1) }}"
+  loop: "{{ lookup('ansible.builtin.vars', 'ceph_common_keyrings_types') |
+    flatten(levels=1) }}"
   loop_control:
     loop_var: "ceph_dir"
     label: "{{ hostvars[inventory_hostname]['ceph_common_workdir_dest'] + '/' ~
       ceph_dir }}"
   when:
     - "ceph_dir is defined"
-    - "ceph_dir not in ['', [], None]"
+    - "ceph_dir not in ['', [], '[]', None]"
 - name: "ceph_common | Create override systemd service directory [ceph-mgr]"
   ansible.builtin.file:
-    path: "{{ vars['ceph_common_systemd_dir'] + '/ceph-mgr@.service.d' }}"
+    path: "{{ lookup('ansible.builtin.vars', 'ceph_common_systemd_dir') +
+      '/ceph-mgr@.service.d' }}"
     state: "directory"
     group: "root"
     owner: "root"
     mode: "0755"
     recurse: "no"
   when:
-    - "vars['ceph_common_systemd']['mgr'] is defined"
-    - "vars['ceph_common_systemd']['mgr'] not in ['', [], None]"
+    - "(lookup('ansible.builtin.vars', 'ceph_common_systemd')['mgr'] |
+      default('')) not in ['', [], '[]', None]"
 - name: "ceph_common | Create override systemd service directory
     [ceph-exporter]"
   ansible.builtin.file:
-    path: "{{ vars['ceph_common_systemd_dir'] + '/ceph-exporter.service.d' }}"
+    path: "{{ lookup('ansible.builtin.vars', 'ceph_common_systemd_dir') +
+      '/ceph-exporter.service.d' }}"
     state: "directory"
     group: "root"
     owner: "root"
     mode: "0755"
     recurse: "no"
   when:
-    - "vars['ceph_common_systemd']['exporter_hotfix'] is defined"
-    - "vars['ceph_common_systemd']['exporter_hotfix'] == 'true'"
+    - "(lookup('ansible.builtin.vars',
+      'ceph_common_systemd')['exporter_hotfix'] | default('')) in 'true'"

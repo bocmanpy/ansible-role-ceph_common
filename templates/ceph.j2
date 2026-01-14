@@ -2,8 +2,8 @@
 {{ '# ' + ansible_managed }}
 {{ '# Do not edit manually' }}
 
-{% for c in vars['ceph_common_settings'] %}
-{% if c['global'] is defined and c['global'] != '' %}
+{% for c in lookup('ansible.builtin.vars', 'ceph_common_settings') %}
+{% if c['global'] is defined and c['global'] not in ['', [], '[]', None] %}
 {% for cg in c['global'] %}
 {% if loop['first'] %}
 {{ '[global]' }}
@@ -13,7 +13,7 @@
 {% endfor %}
 {% endfor %}
 {% endif %}
-{% if c['client'] is defined and c['client'] != '' %}
+{% if c['client'] is defined and c['client'] not in ['', [], '[]', None] %}
 {% for cc in c['client'] %}
 {% for k,v in cc.items() %}
 {% if loop['first'] %}
@@ -35,7 +35,7 @@
 {% endfor %}
 {% endfor %}
 {% endif %}
-{% if c['mon'] is defined and c['mon'] != '' %}
+{% if c['mon'] is defined and c['mon'] not in ['', [], '[]', None] %}
 {% for cm in c['mon'] %}
 {% if loop['first'] %}
 {{ '[mon]' }}
@@ -45,7 +45,7 @@
 {% endfor %}
 {% endfor %}
 {% endif %}
-{% if c['osd'] is defined and c['osd'] != '' %}
+{% if c['osd'] is defined and c['osd'] not in ['', [], '[]', None] %}
 {% for co in c['osd'] %}
 {% if loop['first'] %}
 {{ '[osd]' }}
